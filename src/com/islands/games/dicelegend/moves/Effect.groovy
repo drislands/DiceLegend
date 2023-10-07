@@ -5,11 +5,13 @@ import groovy.transform.Canonical
 @Canonical
 class Effect {
     String name
-    boolean oneTurn
+    boolean endTurn
     boolean stackable
 
     def conditions = []
     def actions = []
+
+    def watchStackName
 
     Effect(String name) {
         this.name = name

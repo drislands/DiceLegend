@@ -1,5 +1,8 @@
 package com.islands.games.dicelegend.moves
 
+import com.islands.games.dicelegend.Duel
+import com.islands.games.dicelegend.Player
+
 import java.util.regex.Pattern
 
 /**
@@ -101,9 +104,7 @@ class MoveParser {
         parseMoveList('moves.txt')
         println "Total of ${moves.size()} moves parsed!"
 
-        "test flame wall and rocket punch"()
-        "test flame wall and rock throw"()
-        "test flame wall and water jet"()
+        "test stone wall with water jet and a clump earth"()
     }
 
     static void "test rocket punch and fire fists"() {
@@ -168,5 +169,37 @@ class MoveParser {
                 println it.trigger(attack)
         }
 
+    }
+
+    static void "test stone wall with water jet and a clump earth"() {
+        Player testPlayer = new Player("Bob")
+        Duel.activePlayer = testPlayer
+
+        def attack = getMove('Water Jet')
+        println attack
+
+        def wall = getMove('Stone Wall')
+        /*
+        println "Does the mitigation effects of SW work on Water Jet?"
+        wall.effects.each {
+            def valid = it.valid(attack)
+            println "> ${valid?"Yes!":"No..."}"
+            if(valid)
+                println it.trigger(attack)
+        }
+         */
+
+        testPlayer.effects << new Effect('Clump Earth')
+        testPlayer.effects << new Effect('Clump Earth')
+
+        println "Added two blank effects named Clump Earth! Let's see if the mitigation effects change!"
+        wall.effects.each {
+            def valid = it.valid(attack)
+            println "> ${valid?"Yes!":"No..."}"
+            if(valid) {
+                attack = it.trigger(attack)
+                println attack
+            }
+        }
     }
 }

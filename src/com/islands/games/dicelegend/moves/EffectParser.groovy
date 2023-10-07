@@ -1,5 +1,7 @@
 package com.islands.games.dicelegend.moves
 
+import com.islands.games.dicelegend.Duel
+
 import java.util.regex.Pattern
 
 class EffectParser {
@@ -32,18 +34,23 @@ class EffectParser {
         PIECES[~/WHEN:[^,]+/] = { Effect effect, String piece ->
             def whenString = piece.split('WHEN:')[1]
 
-            def negate = false
-            if(whenString.startsWith('!')) {
-                whenString = whenString[1..-1]
-                negate = true
-            }
-            Trait t = Trait.get(whenString)
+            if(whenString.startsWith('STACKS') ) {
+                def stackName = whenString.split('STACKS ')[1]
+                effect.watchStackName = stackName
+            } else {
+                def negate = false
+                if(whenString.startsWith('!')) {
+                    whenString = whenString[1..-1]
+                    negate = true
+                }
+                Trait t = Trait.get(whenString)
 
-            effect.conditions << { Move m ->
-                if(negate)
-                    !m.traits.contains(t)
-                else
-                    m.traits.contains(t)
+                effect.conditions << { Move m ->
+                    if(negate)
+                        !m.traits.contains(t)
+                    else
+                        m.traits.contains(t)
+                }
             }
         }
         // TODO: make this more modular than just updating stats of a move
@@ -60,23 +67,33 @@ class EffectParser {
         def action = null
         if(operation in ['ADD','SET','SUB']) {
             def stat = details[1]
-            def value = details[2] as int
+            def literalValue = details[2]
+            Closure<Integer> value
+            if(literalValue == "STACKS") {
+                value = {
+                    Duel.activePlayer.effects.findAll {
+                        it.name == effect.watchStackName
+                    }.size()
+                }
+            } else {
+                value = { literalValue as int }
+            }
 
             def op
             switch (operation){
                 case "ADD":
                     op = { int moveStat ->
-                        moveStat + value
+                        moveStat + value()
                     }
                     break
                 case "SUB":
                     op = { int moveStat ->
-                        moveStat - value
+                        moveStat - value()
                     }
                     break
                 case "SET":
                     op = { int moveStat ->
-                        value
+                        value()
                     }
                     break
             }

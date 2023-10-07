@@ -32,6 +32,7 @@ class Move {
         clone.damagePerHit = damagePerHit
         clone.selfDamage = selfDamage
         clone.healPerHit = healPerHit
+        clone.finalDamageMod = finalDamageMod
         clone.effects = effects
 
         updates.each {
