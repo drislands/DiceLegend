@@ -9,13 +9,14 @@ import groovy.transform.Canonical
 class Move {
     ArrayList<Trait> traits = []
 
-    int hitDice      = 0
-    int autoHits     = 0
-    int damagePerHit = 0
-    int selfDamage   = 0
-    int healPerHit   = 0
+    int hitDice        = 0
+    int autoHits       = 0
+    int damagePerHit   = 0
+    int selfDamage     = 0
+    int healPerHit     = 0
+    int finalDamageMod = 0
 
-    Effect effect
+    ArrayList<Effect> effects = []
 
     String name
 
@@ -31,7 +32,7 @@ class Move {
         clone.damagePerHit = damagePerHit
         clone.selfDamage = selfDamage
         clone.healPerHit = healPerHit
-        clone.effect = effect
+        clone.effects = effects
 
         updates.each {
             it(clone)

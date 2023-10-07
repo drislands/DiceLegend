@@ -1,7 +1,7 @@
 package com.islands.games.dicelegend.moves
 
 enum Trait {
-    ATTACK,EFFECT,
+    ATTACK,EFFECT,TRAP,
     CONTACT,RANGED, // ATTACK only
     STACKING,PERSISTENT, // EFFECT only
     FAST,SLOW,

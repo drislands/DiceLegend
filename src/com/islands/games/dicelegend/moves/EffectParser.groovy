@@ -16,11 +16,14 @@ class EffectParser {
         STAT_MAP['DMG'] = { Move move, Closure operation ->
             move.damagePerHit = operation(move.damagePerHit) as int
         }
-        STAT_MAP['SLF'] = { Move move, Closure operation ->
+        STAT_MAP['SELF'] = { Move move, Closure operation ->
             move.selfDamage = operation(move.selfDamage) as int
         }
         STAT_MAP['HEAL'] = { Move move, Closure operation ->
             move.healPerHit = operation(move.healPerHit) as int
+        }
+        STAT_MAP['TOTAL'] = { Move move, Closure operation ->
+            move.finalDamageMod = operation(move.finalDamageMod) as int
         }
     }
 
@@ -29,10 +32,18 @@ class EffectParser {
         PIECES[~/WHEN:[^,]+/] = { Effect effect, String piece ->
             def whenString = piece.split('WHEN:')[1]
 
+            def negate = false
+            if(whenString.startsWith('!')) {
+                whenString = whenString[1..-1]
+                negate = true
+            }
             Trait t = Trait.get(whenString)
 
             effect.conditions << { Move m ->
-                m.traits.contains(t)
+                if(negate)
+                    !m.traits.contains(t)
+                else
+                    m.traits.contains(t)
             }
         }
         // TODO: make this more modular than just updating stats of a move
@@ -60,7 +71,7 @@ class EffectParser {
                     break
                 case "SUB":
                     op = { int moveStat ->
-                        Math.max(moveStat - value,0)
+                        moveStat - value
                     }
                     break
                 case "SET":
