@@ -7,6 +7,7 @@ class Effect {
     String name
     boolean endTurn
     boolean stackable
+    boolean trap
 
     def conditions = []
     def actions = []

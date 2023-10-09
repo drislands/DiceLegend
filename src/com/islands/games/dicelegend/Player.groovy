@@ -1,7 +1,10 @@
 package com.islands.games.dicelegend
 
 import com.islands.games.dicelegend.moves.Effect
+import com.islands.games.dicelegend.moves.Move
+import groovy.transform.Canonical
 
+@Canonical
 class Player {
     static int DEFAULT_HEALTH = 10
     static int DEFAULT_ARMOR = 0
@@ -20,6 +23,9 @@ class Player {
     String name
 
 
+    Move chosenMove
+
+
     ArrayList<Effect> effects = []
 
     Player(String name) {
@@ -27,9 +33,13 @@ class Player {
         baseHealth = DEFAULT_HEALTH
         baseArmor = DEFAULT_ARMOR
         baseDamage = DEFAULT_DAMAGE
+
+        currentHealth = baseHealth
     }
 
+    /////////////////////
+
     void addHealth(int add) {
-        currentHealth = Math.min(baseHealth,currentHealth + add)
+        currentHealth = Math.max(0,Math.min(baseHealth,currentHealth + add))
     }
 }
