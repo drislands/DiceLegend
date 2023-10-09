@@ -55,6 +55,12 @@ class MoveParser {
             )
             return
         }
+        if(piece.startsWith("END=")) {
+            move.effects << EffectParser.parseEffectText(
+                    piece.split('=')[1],true
+            )
+            return
+        }
         def foundPiece = PIECES.find { k, v ->
             piece ==~ k
         }
@@ -104,7 +110,8 @@ class MoveParser {
         parseMoveList('moves.txt')
         println "Total of ${moves.size()} moves parsed!"
 
-        "test stone wall with water jet and a clump earth"()
+
+        "test ice wall and blessed fountain"()
     }
 
     static void "test rocket punch and fire fists"() {
@@ -201,5 +208,43 @@ class MoveParser {
                 println attack
             }
         }
+    }
+
+    static void "test ice wall and rocket punch"() {
+        def attack = getMove('Rocket Punch')
+        println attack
+
+        def wall = getMove("Ice Wall")
+        println "Will damage be mitigated?"
+        wall.effects.each {
+            if(!it.endTurn) {
+                def valid = it.valid(attack)
+                println "> ${valid?"Yes!":"No..."}"
+                if(valid)
+                    println it.trigger(attack)
+            }
+        }
+    }
+
+    static void "test ice wall and blessed fountain"() {
+        Player testPlayer = new Player("Bob")
+        testPlayer.currentHealth = 5
+        Player testDummy = new Player("Dummy")
+        Duel.player1 = testPlayer
+        Duel.player2 = testDummy
+
+        testPlayer.effects << new Effect("Blessed Fountain")
+        testPlayer.effects << new Effect("Blessed Fountain")
+
+        def wall = getMove("Ice Wall")
+        Duel.lastMovePlayed1 = wall
+        Duel.lastMovePlayed2 = getMove("Rocket Punch")
+        testPlayer.effects << wall.effects.find { it.name == "IceWallHeal" }
+
+        println "Dummy is doing $Duel.lastMovePlayed2.name!"
+
+        println "Bob's health before end of turn: $testPlayer.currentHealth"
+        Duel.endOfTurnEffects()
+        println "Bob's health at end of turn: $testPlayer.currentHealth"
     }
 }

@@ -1,6 +1,7 @@
 package com.islands.games.dicelegend.moves
 
 import com.islands.games.dicelegend.Duel
+import com.islands.games.dicelegend.Player
 
 import java.util.regex.Pattern
 
@@ -107,6 +108,21 @@ class EffectParser {
             action = { Move m ->
                 m.traits << addedTrait
             }
+        } else if(operation == 'HEALNOW') {
+            def literalValue = details[1]
+            Closure<Integer> value
+            if(literalValue == "STACKS") {
+                value = {
+                    Duel.activePlayer.effects.findAll {
+                        it.name == effect.watchStackName
+                    }.size()
+                }
+            } else {
+                value = { literalValue as int }
+            }
+            action = { Move p ->
+                Duel.activePlayer.addHealth(value())
+            }
         }
 
         effect.actions << action
@@ -119,9 +135,10 @@ class EffectParser {
         foundPiece.value.call(effect,piece)
     }
 
-    static Effect parseEffectText(String input) {
+    static Effect parseEffectText(String input,boolean endTurn=false) {
         ArrayList<String> pieces = input.split(',')
         Effect effect = new Effect(pieces[0])
+        effect.endTurn = endTurn
 
         pieces[1..-1].each {
             parseEffectPiece(effect,it)

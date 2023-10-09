@@ -14,6 +14,9 @@ class Player {
     // How much damage you always inflict.
     int baseDamage
 
+    int currentHealth
+
+
     String name
 
 
@@ -24,5 +27,9 @@ class Player {
         baseHealth = DEFAULT_HEALTH
         baseArmor = DEFAULT_ARMOR
         baseDamage = DEFAULT_DAMAGE
+    }
+
+    void addHealth(int add) {
+        currentHealth = Math.min(baseHealth,currentHealth + add)
     }
 }

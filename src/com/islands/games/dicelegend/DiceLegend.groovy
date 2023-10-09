@@ -18,6 +18,10 @@ class DiceLegend {
     }
 
     static void main(args) {
+        startBot()
+    }
+
+    static void startBot() {
         def conf = new Configuration.Builder()
                 .setName("stab-you-bot")
                 .addServer("irc.libera.chat")
@@ -26,6 +30,9 @@ class DiceLegend {
                 .buildConfiguration()
 
         def bot = new PircBotX(conf)
-        bot.startBot()
+        Thread.start {
+            bot.startBot()
+        }
+        println "The bot was started!"
     }
 }
