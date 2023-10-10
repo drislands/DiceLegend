@@ -5,7 +5,11 @@ import com.islands.games.dicelegend.meta.Printable
 import com.islands.games.dicelegend.moves.Effect
 import com.islands.games.dicelegend.moves.Move
 
+/**
+ * The class that handles the game loop, and the storage of information pertinent to the active duel.
+ */
 class Duel implements Printable {
+    // The challenging player and the player challenged, in order.
     static Player player1
     static Player player2
 
@@ -16,12 +20,20 @@ class Duel implements Printable {
     static Player opposingPlayer
 
 
+    /**
+     * Resets the duel back to the default state.
+     */
     static void reset() {
         gameState = GameState.WAITING
         player1 = null
         player2 = null
     }
 
+    /**
+     * Attempts to set the {@link Player#chosenMove chosenMove} for a given {@link Player}.
+     * @return True if the attempt to set the move is valid, false if invalid.
+     * @throws GameException Thrown if a move is set to a player not participating in the duel.
+     */
     static boolean setMove(Player player, Move move) {
         if(gameState == GameState.GETTING_MOVES) {
             if(!(player in players)) {
@@ -40,6 +52,12 @@ class Duel implements Printable {
         }
     }
 
+    /**
+     * Attempts to start a duel between two players.
+     * @param one The challenging player.
+     * @param two The player challenged.
+     * @return True if the duel was successfully able to be started, false otherwise.
+     */
     static boolean startDuel(Player one,Player two) {
         if(gameState == GameState.WAITING) {
             player1 = one
@@ -56,6 +74,10 @@ class Duel implements Printable {
         }
     }
 
+    /**
+     * Processes the round, as long as each player has chosen their move.
+     * @return True if the duel has ended with one or more defeated players, false otherwise.
+     */
     static boolean processRound() {
         if(gameState != GameState.READY_TO_PROCESS) {
             throw new GameException("Game state not ready to process round")
@@ -92,6 +114,10 @@ class Duel implements Printable {
         return false
     }
 
+    /**
+     * Determines if the duel is over by way of checking each player's health.
+     * @return True if someone is dead, false otherwise.
+     */
     static boolean testOver() {
         if(players.find { it.currentHealth == 0 }) {
             gameState = GameState.DUEL_OVER
@@ -102,6 +128,9 @@ class Duel implements Printable {
     }
 
 
+    /**
+     * Processes the active player's move, applying all relevant effects first.
+     */
     static void processMove() {
         List<Effect> applicableEffects = []
         List<Effect> activeRemoval = []
@@ -126,7 +155,10 @@ class Duel implements Printable {
     }
 
 
-
+    /**
+     * Checks the {@link Move#getSpeed() speed} of each Player's move to determine who goes first.
+     * @return Both players, with the faster player being first in the List.
+     */
     static Player[] getPlayerOrder() {
         debug "Getting player order."
         if(player1.chosenMove.speed > player2.chosenMove.speed) {
@@ -142,10 +174,16 @@ class Duel implements Printable {
         }
     }
 
+    /**
+     * Quick method to get the two players as a list.
+     */
     static Player[] getPlayers() {
         [player1,player2]
     }
 
+    /**
+     * Swaps which player is active.
+     */
     static void swapPlayerOrder() {
         Player temp = activePlayer
         activePlayer = opposingPlayer
@@ -153,8 +191,9 @@ class Duel implements Printable {
     }
 
 
-
-
+    /**
+     * Processes all effects that are waiting for the end of the turn.
+     */
     static void endOfTurnEffects() {
         debug "Processing end of turn effects..."
         activePlayer = player1
@@ -166,6 +205,9 @@ class Duel implements Printable {
         endOfTurnEffects_byPlayer()
     }
 
+    /**
+     * Processes all effects that are waiting for the end of the turn, for the active player.
+     */
     static void endOfTurnEffects_byPlayer() {
         def effects = activePlayer.effects.findAll {
             it.endTurn

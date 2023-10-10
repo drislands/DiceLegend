@@ -14,7 +14,12 @@ import org.pircbotx.hooks.events.PrivateMessageEvent
 import java.util.regex.Pattern
 
 
+/**
+ * The primary class for the project, initializing and configuring various elements and starting it all up.
+ */
 class DiceLegend implements Printable {
+    // IRC bot stats
+    // TODO: make configurable at runtime
     static PircBotX bot
     static String real_channel = '#legendsoflinux'
     static String testing_channel = '##stab-bot-testing'
@@ -23,12 +28,20 @@ class DiceLegend implements Printable {
             'drislands'
     ]
 
+    // Duel stats
     static List<Player> players = []
     static Map<Player,Player> challenges = [:]
 
+    /**
+     * The over-sized object that handles all incoming chats.
+     */
     static def listener = new ListenerAdapter() {
         // This is for messages to the channel.
         @Override
+        /**
+         * Processes incoming messages sent to the channel.
+         * @param event Object representing the incoming message.
+         */
         void onMessage(MessageEvent event) throws Exception {
             debug "Channel message received!"
             def msg = event.message
@@ -73,6 +86,10 @@ class DiceLegend implements Printable {
 
         // This is for private messages.
         @Override
+        /**
+         * Processes incoming messages sent to the bot in a private message.
+         * @param event Object representing the incoming message.
+         */
         void onPrivateMessage(PrivateMessageEvent event) throws Exception {
             debug "Private message received!"
             def msg = event.message
@@ -139,6 +156,9 @@ class DiceLegend implements Printable {
 
     //////////////////////////
 
+    /**
+     * Starts the bot with configured values.
+     */
     static void startBot() {
         def conf = new Configuration.Builder()
                 .setName("stab-you-bot")
@@ -154,18 +174,30 @@ class DiceLegend implements Printable {
         println "The bot was started!"
     }
 
+    /**
+     * Shuts the bot, and the program, down.
+     */
     static void stopBot() {
         messageChannel('Bye for now!')
         bot.stopBotReconnect()
         bot.sendIRC().quitServer()
     }
 
+    /**
+     * Sends a message to the configured channel.
+     * @param message
+     */
     static void messageChannel(String message) {
         bot.sendIRC().message(channel,message)
     }
 
     //////////////////////////
 
+    /**
+     * Adds a new {@link Player} to the list of registered {@link DiceLegend#players}.
+     * @param user The triggering user, to be made into a Player.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
     static def registerPlayer(user,event) {
         def nick = user.nick
         if(nick in players*.name) {
@@ -176,6 +208,11 @@ class DiceLegend implements Printable {
         }
     }
 
+    /**
+     * Retracts the user's challenge, if any.
+     * @param user The triggering user.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
     static def retractChallenge(user,event) {
         def me = getPlayer(user)
         if(me) {
@@ -190,6 +227,11 @@ class DiceLegend implements Printable {
         }
     }
 
+    /**
+     * Accepts a challenge issued to the user, if any.
+     * @param user The triggering user.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
     static def acceptChallenge(user,event) {
         def me = getPlayer(user)
         if(me) {
@@ -211,6 +253,11 @@ class DiceLegend implements Printable {
         }
     }
 
+    /**
+     * Rejects a waiting challenge, if any.
+     * @param user The triggering user.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
     static def rejectChallenge(user,event) {
         def me = getPlayer(user)
         if(me) {
@@ -220,8 +267,15 @@ class DiceLegend implements Printable {
         }
     }
 
+    /**
+     * Method to handle messages sent that are not single-word commands.
+     * @param message Text of the message.
+     * @param user The triggering user.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
     static def parseOther(message,user,event) {
         Map<Pattern,Closure> patterns = [:]
+        // For when a challenge is issued.
         patterns[~/\?challenge .*/] = {
             if(getPlayer(user)) {
                 def splits = message.split(' ')
@@ -247,7 +301,7 @@ class DiceLegend implements Printable {
             }
         }
         patterns[~/\?retr /] = {
-
+            // TODO: anything? this was going to be /\?retract/ but that was moved to the main body
         }
 
 
@@ -262,9 +316,15 @@ class DiceLegend implements Printable {
 
     //////////////////////////
 
+    /**
+     * Quick method to grab a Player by the User.
+     */
     static Player getPlayer(User user) {
         players.find { it.name == user.nick }
     }
+    /**
+     * Quick method to grab a Player by the nick.
+     */
     static Player getPlayer(String name) {
         players.find { it.name == name }
     }

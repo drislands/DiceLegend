@@ -29,8 +29,8 @@ class Move implements Printable {
 
     /**
      * Applies damage and healing per the stats of the move.
-     * @param user
-     * @param foe
+     * @param user The {@link Player} using the Move.
+     * @param foe The opposing Player to whom damage will be done, presumably.
      */
     void process(Player user,Player foe) {
         print "$user.name used $name!"
@@ -78,10 +78,17 @@ class Move implements Printable {
         foe.addHealth(Math.min(0,-damage)) // Make sure that damage mitigation doesn't heal the foe
     }
 
+    /**
+     * Quick method to determine if the Move is an attack.
+     */
     boolean isAttack() {
         traits.contains(Trait.ATTACK)
     }
 
+    /**
+     * Convert the speed of the Move into an integer for easy comparison, as determined by what {@link Trait}s it has.
+     * @return 2 if fast, 1 is normal, 0 if slow.
+     */
     int getSpeed() {
         if(traits.contains(Trait.FAST)) {
             debug "> $name: Fast move!"
@@ -94,6 +101,11 @@ class Move implements Printable {
         }
     }
 
+    /**
+     * Copy the Move into a new object, modified by the actions of the triggering {@link Effect}.
+     * @param updates The triggering Effect's {@link Effect#actions}.
+     * @return A copy of the original Move, modified as described.
+     */
     Move clone(updates) {
         def clone = new Move(this.name)
         clone.traits = traits
