@@ -60,9 +60,6 @@ class Duel implements Printable {
         if(gameState != GameState.READY_TO_PROCESS) {
             throw new GameException("Game state not ready to process round")
         }
-        if("Ice Wall" in players*.chosenMove*.name) {
-            debug "Debugging."
-        }
         gameState = GameState.PROCESSING_ROUND
         debug "Processing a round!"
         (activePlayer,opposingPlayer) = playerOrder
@@ -170,9 +167,6 @@ class Duel implements Printable {
     }
 
     static void endOfTurnEffects_byPlayer() {
-        if(activePlayer.chosenMove.name == 'Ice Wall') {
-            debug "Debugging."
-        }
         def effects = activePlayer.effects.findAll {
             it.endTurn
         }
