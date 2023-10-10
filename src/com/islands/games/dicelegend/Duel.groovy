@@ -13,9 +13,9 @@ class Duel implements Printable {
 
 
     static void processRound() {
-        print "Processing a round!"
+        debug "Processing a round!"
         (activePlayer,opposingPlayer) = playerOrder
-        print "First player is $activePlayer.name."
+        debug "First player is $activePlayer.name."
         processMove()
 
         swapPlayerOrder()
@@ -51,7 +51,7 @@ class Duel implements Printable {
 
 
     static Player[] getPlayerOrder() {
-        print "Getting player order."
+        debug "Getting player order."
         if(player1.chosenMove.speed > player2.chosenMove.speed) {
             [player1,player2]
         } else if(player2.chosenMove.speed > player1.chosenMove.speed) {

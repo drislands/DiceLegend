@@ -25,16 +25,16 @@ class RNGesus implements Printable {
     static int rollHits(int numberOfDice) {
         int sum = 0
 
-        print "Rolling $numberOfDice dice!"
+        debug "Rolling $numberOfDice dice!"
         numberOfDice.times {
             if(rollForHit()) {
-                print "> hit!"
+                debug "> hit!"
                 sum++
             } else {
-                print "> miss..."
+                debug "> miss..."
             }
         }
-        print "Total of $sum hits!"
+        debug "Total of $sum hits!"
 
         sum
     }

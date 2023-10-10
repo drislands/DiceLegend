@@ -2,6 +2,7 @@ package com.islands.games.dicelegend.moves
 
 import com.islands.games.dicelegend.Duel
 import com.islands.games.dicelegend.Player
+import com.islands.games.dicelegend.meta.Printable
 
 import java.util.regex.Pattern
 
@@ -10,7 +11,7 @@ import java.util.regex.Pattern
  * attack/defend/heal/trigger
  *
  */
-class MoveParser {
+class MoveParser implements Printable {
     static List<Move> moves = []
     static Map<Pattern,Closure> PIECES = [:]
 
@@ -95,10 +96,10 @@ class MoveParser {
 
         moveText.eachLine {
             if((!it.startsWith('#')) && it ) {
-                println "Parsing one..."
+                debug "Parsing one..."
                 Move m = parseMoveText(it)
                 moves << m
-                println "> Successfully added $m.name!"
+                debug "> Successfully added $m.name!"
             }
         }
 
@@ -111,10 +112,10 @@ class MoveParser {
     //////////////////////////////////////
 
     static void main(args) {
-        println "Testing move parsing!"
+        debug "Testing move parsing!"
 
         parseMoveList('moves.txt')
-        println "Total of ${moves.size()} moves parsed!"
+        debug "Total of ${moves.size()} moves parsed!"
 
 
         println getMove("Ice Wall")

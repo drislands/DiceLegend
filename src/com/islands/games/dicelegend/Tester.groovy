@@ -45,25 +45,25 @@ class Tester implements Printable {
                 pick = 3
             } else {
                 Duel.processRound()
-                print "Active effects:"
-                print "> $Duel.player1.name:"
+                debug "Active effects:"
+                debug "> $Duel.player1.name:"
                 Duel.player1.effects.each {
-                    print ">> $it.name"
+                    debug ">> $it.name"
                 }
-                print "> $Duel.player2.name:"
+                debug "> $Duel.player2.name:"
                 Duel.player2.effects.each {
-                    print ">> $it.name"
+                    debug ">> $it.name"
                 }
                 pick = 1
                 if(Duel.player1.currentHealth == 0) {
-                    println "$Duel.player1.name died!"
+                    print "$Duel.player1.name died!"
                     input = 'Q'
                 }
                 if(Duel.player2.currentHealth == 0) {
-                    println "$Duel.player2.name died!"
+                    print "$Duel.player2.name died!"
                     input = 'Q'
                 }
-                println "Next turn commencing!"
+                print "Next turn commencing!"
             }
         } while(input.toUpperCase() != 'Q')
 
@@ -105,8 +105,8 @@ class Tester implements Printable {
 
         def m1 = MoveParser.getMove(move1)
         def m2 = MoveParser.getMove(move2)
-        print "Bob using $m1"
-        print "Dingus using $m2"
+        debug "Bob using $m1"
+        debug "Dingus using $m2"
         bob.chosenMove = m1
         dingus.chosenMove = m2
 
@@ -121,13 +121,13 @@ class Tester implements Printable {
 
     static void oneRound(Player one,Player two) {
 
-        print "Starting health:"
-        print "> $one.currentHealth"
-        print "> $two.currentHealth"
+        debug "Starting health:"
+        debug "> $one.currentHealth"
+        debug "> $two.currentHealth"
         Duel.processRound()
-        print "Resulting health:"
-        print "> $one.currentHealth"
-        print "> $two.currentHealth"
+        debug "Resulting health:"
+        debug "> $one.currentHealth"
+        debug "> $two.currentHealth"
     }
 
     // Move Parser tests

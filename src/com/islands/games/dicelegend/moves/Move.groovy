@@ -33,7 +33,7 @@ class Move implements Printable {
      * @param foe
      */
     void process(Player user,Player foe) {
-        print "Processing move $name, used by $user.name against $foe.name!"
+        debug "Processing move $name, used by $user.name against $foe.name!"
         if(!traits.contains(Trait.ATTACK)) {
             if(traits.contains(Trait.STACKING))
                 user.effects.addAll(effects)
@@ -53,16 +53,16 @@ class Move implements Printable {
 
         heal += (hits * healPerHit)
 
-        print "> SELF:"
+        debug "> SELF:"
         if(heal) {
-            if(heal > 0) print ">> Healing for $heal!"
-            else print ">> Ouch! Hurt for $heal!"
+            if(heal > 0) debug ">> Healing for $heal!"
+            else debug ">> Ouch! Hurt for $heal!"
         }
-        print "> FOE:"
+        debug "> FOE:"
         if(damage) {
-            print ">> Struck for $damage!"
+            debug ">> Struck for $damage!"
         } else {
-            print ">> No damage this time :/"
+            debug ">> No damage this time :/"
         }
         user.addHealth(heal)
         foe.addHealth(Math.min(0,-damage)) // Make sure that damage mitigation doesn't heal the foe
@@ -70,10 +70,10 @@ class Move implements Printable {
 
     int getSpeed() {
         if(traits.contains(Trait.FAST)) {
-            print "Fast move!"
+            debug "> $name: Fast move!"
             2
         } else if (traits.contains(Trait.SLOW)) {
-            print "Slow move..."
+            debug "> $name: Slow move..."
             0
         } else {
             1
