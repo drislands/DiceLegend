@@ -33,8 +33,8 @@ class Move implements Printable {
      * @param foe
      */
     void process(Player user,Player foe) {
-        debug "Processing move $name, used by $user.name against $foe.name!"
-        if(!traits.contains(Trait.ATTACK)) {
+        print "$user.name used $name!"
+        if(!attack) {
             if(traits.contains(Trait.STACKING))
                 user.effects.addAll(effects)
             else {
@@ -47,6 +47,15 @@ class Move implements Printable {
         def damage
 
         hits += RNGesus.rollHits(hitDice)
+        if(autoHits) {
+            print "> Rolled $hitDice dice, plus $autoHits auto-hits! Total of $hits hits at $damagePerHit per hit!"
+        } else {
+            if(hits) {
+                print "> Rolled $hitDice dice! Total of $hits hits at $damagePerHit per hit!"
+            } else if (hits && finalDamageMod < 1) {
+                print "> Rolled $hitDice dice, but all missed!"
+            }
+        }
 
         damage = hits * damagePerHit
         damage += finalDamageMod
@@ -55,17 +64,22 @@ class Move implements Printable {
 
         debug "> SELF:"
         if(heal) {
-            if(heal > 0) debug ">> Healing for $heal!"
-            else debug ">> Ouch! Hurt for $heal!"
+            if(heal > 0) print ">> Healing self for $heal!"
+            else print ">> Ouch! Hurt self for $heal!"
         }
         debug "> FOE:"
         if(damage) {
-            debug ">> Struck for $damage!"
+            print ">> Struck $foe.name for $damage!"
         } else {
-            debug ">> No damage this time :/"
+            if(attack)
+                print ">> No damage this time :/"
         }
         user.addHealth(heal)
         foe.addHealth(Math.min(0,-damage)) // Make sure that damage mitigation doesn't heal the foe
+    }
+
+    boolean isAttack() {
+        traits.contains(Trait.ATTACK)
     }
 
     int getSpeed() {

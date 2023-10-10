@@ -42,4 +42,11 @@ class Player {
     void addHealth(int add) {
         currentHealth = Math.max(0,Math.min(baseHealth,currentHealth + add))
     }
+
+    /////////////////////
+
+    void reset() {
+        currentHealth = baseHealth
+        chosenMove = null
+    }
 }

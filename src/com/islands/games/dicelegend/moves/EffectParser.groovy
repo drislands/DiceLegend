@@ -2,6 +2,7 @@ package com.islands.games.dicelegend.moves
 
 import com.islands.games.dicelegend.Duel
 import com.islands.games.dicelegend.Player
+import com.islands.games.dicelegend.exceptions.GameException
 
 import java.util.regex.Pattern
 
@@ -61,6 +62,27 @@ class EffectParser {
 
             def op = details[0]
             parseOperation(effect,op,details)
+        }
+        PIECES[~/SET:[^,]+/] = { Effect effect, String piece ->
+            def splits = piece.split('SET:')[1].split(' ')
+            def traitToSet = splits[0]
+            def placeholderValue = splits[1]
+            def value = null
+            if(placeholderValue == 'TRUE') {
+                value = true
+            } else if(placeholderValue == 'FALSE') {
+                value = false
+            } else {
+                // TODO: determine if we want to allow any other values?
+                throw new GameException("Value of $placeholderValue is not valid for SET clause")
+            }
+
+            switch(traitToSet) {
+                case 'TRAP':
+                    effect.trap = value
+                    break
+                // TODO: add other traits that could be changed
+            }
         }
     }
 
