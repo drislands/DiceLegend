@@ -11,7 +11,62 @@ class Tester implements Printable {
 
         //'test Bob and Dingus for one rocket punch each'()
         //'test Bob with rocket punch and Dingus with rock throw'()
-        'test Bob with 3 clump earth and then rock throw versus Dingus with fire fists then rocket punch'()
+        //'test Bob with 3 clump earth and then rock throw versus Dingus with fire fists then rocket punch'()
+        repl()
+    }
+
+    // The Big One
+
+    static String read() {
+        System.in.newReader().readLine()
+    }
+
+    static void repl() {
+        String input
+        print "What is player 1's name? "
+        input = read()
+        Duel.player1 = new Player(input)
+        print "What is player 2's name? "
+        input = read()
+        Duel.player2 = new Player(input)
+
+
+        def pick = 1
+        do {
+            if(pick == 1) {
+                print "What move will $Duel.player1.name do? > "
+                input = read()
+                Duel.player1.chosenMove = MoveParser.getMove(input)
+                pick = 2
+            } else if(pick == 2){
+                print "What move will $Duel.player2.name do? > "
+                input = read()
+                Duel.player2.chosenMove = MoveParser.getMove(input)
+                pick = 3
+            } else {
+                Duel.processRound()
+                print "Active effects:"
+                print "> $Duel.player1.name:"
+                Duel.player1.effects.each {
+                    print ">> $it.name"
+                }
+                print "> $Duel.player2.name:"
+                Duel.player2.effects.each {
+                    print ">> $it.name"
+                }
+                pick = 1
+                if(Duel.player1.currentHealth == 0) {
+                    println "$Duel.player1.name died!"
+                    input = 'Q'
+                }
+                if(Duel.player2.currentHealth == 0) {
+                    println "$Duel.player2.name died!"
+                    input = 'Q'
+                }
+                println "Next turn commencing!"
+            }
+        } while(input.toUpperCase() != 'Q')
+
     }
 
     // Duel tests
