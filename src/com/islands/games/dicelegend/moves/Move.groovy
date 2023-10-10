@@ -35,7 +35,12 @@ class Move implements Printable {
     void process(Player user,Player foe) {
         print "Processing move $name, used by $user.name against $foe.name!"
         if(!traits.contains(Trait.ATTACK)) {
-            user.effects.addAll(effects)
+            if(traits.contains(Trait.STACKING))
+                user.effects.addAll(effects)
+            else {
+                if(!(user.effects.find { it.name in effects*.name }))
+                    user.effects.addAll(effects)
+            }
         }
         def hits = autoHits
         def heal = -selfDamage

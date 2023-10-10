@@ -54,6 +54,7 @@ class MoveParser {
                     piece.split('=')[1]
             )
             effect.trap = move.traits.contains(Trait.TRAP)
+            effect.stackable = move.traits.contains(Trait.STACKING)
             move.effects << effect
             return
         }
@@ -62,6 +63,7 @@ class MoveParser {
                     piece.split('=')[1],true
             )
             effect.trap = move.traits.contains(Trait.TRAP)
+            effect.stackable = move.traits.contains(Trait.STACKING)
             move.effects << effect
             return
         }

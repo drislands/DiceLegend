@@ -27,6 +27,8 @@ class Duel implements Printable {
 
     static void processMove() {
         List<Effect> applicableEffects = []
+        List<Effect> activeRemoval = []
+        List<Effect> opposingRemoval = []
         applicableEffects.addAll activePlayer.effects.findAll {
             !it.trap
         }
@@ -37,8 +39,12 @@ class Duel implements Printable {
         applicableEffects.each {
             if(it.valid(activePlayer.chosenMove)) {
                 activePlayer.chosenMove = it.trigger(activePlayer.chosenMove)
+                if(it.trap) opposingRemoval << it
+                else activeRemoval << it
             }
         }
+        activePlayer.effects.removeAll activeRemoval
+        opposingPlayer.effects.removeAll opposingRemoval
         activePlayer.chosenMove.process(activePlayer,opposingPlayer)
     }
 
