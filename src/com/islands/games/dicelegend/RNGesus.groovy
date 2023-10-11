@@ -9,9 +9,7 @@ class RNGesus implements Printable {
     static Random randomizer = new Random()
     // TODO: make these configurable
     static int DIE_FACES = 10
-    static final int DEFAULT_THRESHOLD = 6
-    static final int TESTING_THRESHOLD = 1
-    static int HIT_THRESHOLD = TESTING_THRESHOLD
+    static int HIT_THRESHOLD = 6
 
     /**
      * Heads or tails, true or false.
@@ -55,6 +53,11 @@ class RNGesus implements Printable {
         debug "Total of $sum hits!"
 
         sum
+    }
+
+    static void init(ConfigObject conf) {
+        DIE_FACES = conf.faces
+        HIT_THRESHOLD = conf.hitThreshold
     }
 
 }

@@ -4,6 +4,7 @@ import com.islands.games.dicelegend.exceptions.GameException
 import com.islands.games.dicelegend.meta.PrintManager
 import com.islands.games.dicelegend.meta.Printable
 import com.islands.games.dicelegend.moves.MoveParser
+import groovy.cli.commons.CliBuilder
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.User
@@ -21,12 +22,10 @@ class DiceLegend implements Printable {
     // IRC bot stats
     // TODO: make configurable at runtime
     static PircBotX bot
-    static String real_channel = '#legendsoflinux'
-    static String testing_channel = '##stab-bot-testing'
-    static String channel = real_channel
-    static def admins = [
-            'drislands'
-    ]
+    static String channel
+    static List<String> admins
+    static String server
+    static String botNick
 
     // Duel stats
     static List<Player> players = []
@@ -143,15 +142,47 @@ class DiceLegend implements Printable {
     }
 
     static void main(args) {
-        MoveParser.parseMoveList('moves.txt')
+        def conf = parseArgs(args)
+        parseConf(conf)
 
-        //* // Comment this out when ready to print stuff to the server
         PrintManager.printOperation = { String msg ->
             messageChannel(msg)
         }
-         /**/
 
         startBot()
+    }
+
+    //////////////////////////
+
+    static ConfigObject parseArgs(args) {
+        CliBuilder cli = new CliBuilder()
+
+        cli.with {
+            _(longOpt:'moves-list',args:1,
+                    'Path to the file containing the list of moves.')
+            c(longOpt:'conf',args:1,
+                    'Path to the config file.')
+        }
+        def opt = cli.parse(args)
+        String movesPath = opt.'moves-list'
+        String confPath  = opt.c
+        MoveParser.parseMoveList(movesPath)
+
+        def conf = new ConfigSlurper().parse(new File(confPath).text)
+
+        conf
+    }
+
+    static void parseConf(ConfigObject conf) {
+        initBot(conf.irc)
+        RNGesus.init(conf.rng)
+    }
+
+    static void initBot(ConfigObject conf) {
+        channel = conf.channel
+        admins = conf.admins
+        server = conf.server
+        botNick = conf.nick
     }
 
     //////////////////////////
@@ -161,12 +192,13 @@ class DiceLegend implements Printable {
      */
     static void startBot() {
         def conf = new Configuration.Builder()
-                .setName("stab-you-bot")
-                .addServer("irc.libera.chat")
+                .setName(botNick)
+                .addServer(server)
                 .addAutoJoinChannel(channel)
                 .addListener(listener)
                 .buildConfiguration()
 
+        println "Bot: $conf"
         bot = new PircBotX(conf)
         Thread.start {
             bot.startBot()
