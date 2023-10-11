@@ -8,6 +8,7 @@ import groovy.cli.commons.CliBuilder
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.User
+import org.pircbotx.cap.SASLCapHandler
 import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events.MessageEvent
 import org.pircbotx.hooks.events.PrivateMessageEvent
@@ -26,6 +27,7 @@ class DiceLegend implements Printable {
     static List<String> admins
     static String server
     static String botNick
+    static SASLCapHandler saslHandler
 
     // Duel stats
     static List<Player> players = []
@@ -182,7 +184,12 @@ class DiceLegend implements Printable {
         channel = conf.channel
         admins = conf.admins
         server = conf.server
-        botNick = conf.nick
+        botNick = conf.botNick
+
+        ConfigObject sasl = conf.sasl
+        if(sasl) {
+            saslHandler = new SASLCapHandler(sasl.user,sasl.pass)
+        }
     }
 
     //////////////////////////
@@ -191,12 +198,17 @@ class DiceLegend implements Printable {
      * Starts the bot with configured values.
      */
     static void startBot() {
-        def conf = new Configuration.Builder()
+        def builder = new Configuration.Builder()
                 .setName(botNick)
                 .addServer(server)
                 .addAutoJoinChannel(channel)
                 .addListener(listener)
-                .buildConfiguration()
+
+        if(saslHandler) {
+            builder.addCapHandler(saslHandler)
+        }
+
+        def conf = builder.buildConfiguration()
 
         println "Bot: $conf"
         bot = new PircBotX(conf)
