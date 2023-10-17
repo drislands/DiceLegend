@@ -8,6 +8,7 @@ import com.islands.games.dicelegend.meta.Printable
 import com.islands.games.dicelegend.moves.Move
 import com.islands.games.dicelegend.moves.MoveParser
 import com.islands.games.dicelegend.moves.Trait
+import org.pircbotx.Colors
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.User
@@ -172,7 +173,7 @@ class IrcBot implements Printable {
      * @param message
      */
     static void messageChannel(String message) {
-        bot.sendIRC().message(channel,message)
+        bot.sendIRC().message(channel, Colors.MAGENTA + message)
     }
 
     //////////////////////////
@@ -246,6 +247,7 @@ class IrcBot implements Printable {
         def me = getPlayer(user)
         if(me) {
             // TODO
+            event.respond("This function is a work in progress!")
         } else {
             event.respond("You aren't a registered player, there's nothing to reject!")
         }
