@@ -15,6 +15,9 @@ class Duel implements Printable {
 
     static gameState = GameState.WAITING
 
+    static Player trainingDummy = new Player("Training Dummy")
+    static boolean practiceMode = false
+
     // Represents the Player that is using the Move currently being evaluated
     static Player activePlayer
     static Player opposingPlayer
@@ -27,6 +30,7 @@ class Duel implements Printable {
         gameState = GameState.WAITING
         player1 = null
         player2 = null
+        practiceMode = false
     }
 
     /**
@@ -75,6 +79,32 @@ class Duel implements Printable {
     }
 
     /**
+     * Attempts to start a practice duel between one player and the {@link #trainingDummy}.
+     * @param solo The activating player.
+     * @return True if the practice duel was successfully able to be started, false otherwise.
+     */
+    static boolean startDuel(Player solo) {
+        if(gameState == GameState.WAITING) {
+            player1 = solo
+            player2 = trainingDummy
+
+            player1.reset()
+            player2.reset()
+
+            gameState = GameState.GETTING_MOVES
+
+            // TODO: Add more training options besides just random moves.
+            trainingDummy.chosenMove = RNGesus.randomMove
+
+            practiceMode = true
+
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
      * Processes the round, as long as each player has chosen their move.
      * @return True if the duel has ended with one or more defeated players, false otherwise.
      */
@@ -111,6 +141,11 @@ class Duel implements Printable {
 
         gameState = GameState.GETTING_MOVES
         players.each { it.chosenMove = null }
+
+        if(practiceMode) {
+            player2.chosenMove = RNGesus.randomMove
+        }
+
         return false
     }
 
