@@ -7,6 +7,7 @@ import com.islands.games.dicelegend.exceptions.GameException
 import com.islands.games.dicelegend.meta.Printable
 import com.islands.games.dicelegend.moves.Move
 import com.islands.games.dicelegend.moves.MoveParser
+import com.islands.games.dicelegend.moves.Trait
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.User
@@ -255,7 +256,7 @@ class IrcBot implements Printable {
      * @param user The triggering user.
      * @param event The triggering event. Provided so the bot can easily reply.
      */
-    static def startPractice(user, event) {
+    static def startPractice(user, event,Trait element=null) {
         def me = getPlayer(user)
         if(me) {
             if(me in challenges.values()) {
@@ -264,9 +265,9 @@ class IrcBot implements Printable {
                 event.respond("You can't practice with an active challenge waiting! Either retract it or wait " +
                         "for ${challenges[me].name} to accept!}")
             } else {
-                if(Duel.startDuel(me)) {
+                if(Duel.startDuel(me,element)) {
                     def you = Duel.trainingDummy
-                    messageChannel("$me.name, your practice session is initiating!")
+                    messageChannel("$me.name, your practice session ${element?"with dummy focused on $element moves ":''}is initiating!")
                     messageChannel("A practice duel is now underway, between challenger $me.name and $you.name!")
                     messageChannel("Fighter, privately message me the name of the move you want to use!")
                 } else {
@@ -311,8 +312,21 @@ class IrcBot implements Printable {
                 event.respond("You aren't a registered player! Do it with `?register`!")
             }
         }
-        patterns[~/\?retr /] = {
-            // TODO: anything? this was going to be /\?retract/ but that was moved to the main body
+        patterns[~/\?practice .*/] = {
+            def splits = message.split(' ')
+            if(splits.size() > 2) {
+                // TODO: allow multiple traits?
+                event.respond("One at a time!")
+            } else {
+                def element = Trait.get(splits[1])
+
+                if(element) {
+                    startPractice(user,event,element)
+                } else {
+                    event.respond("`${splits[1]}` doesn't match any known traits. Check your spelling?")
+                }
+            }
+
         }
 
 

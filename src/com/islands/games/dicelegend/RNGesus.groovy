@@ -1,8 +1,10 @@
 package com.islands.games.dicelegend
 
+import com.islands.games.dicelegend.exceptions.GameException
 import com.islands.games.dicelegend.meta.Printable
 import com.islands.games.dicelegend.moves.Move
 import com.islands.games.dicelegend.moves.MoveParser
+import com.islands.games.dicelegend.moves.Trait
 
 /**
  * Randomizer class for all random results.
@@ -55,6 +57,17 @@ class RNGesus implements Printable {
         debug "Total of $sum hits!"
 
         sum
+    }
+
+    static Move getRandomMove(Trait element) {
+        def moves = MoveParser.moves.findAll {
+            element in it.traits
+        }
+
+        if(moves) {
+            def size = moves.size()
+            return moves[randomizer.nextInt(size)]
+        }
     }
 
     static Move getRandomMove() {

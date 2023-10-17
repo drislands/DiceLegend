@@ -4,6 +4,7 @@ import com.islands.games.dicelegend.exceptions.GameException
 import com.islands.games.dicelegend.meta.Printable
 import com.islands.games.dicelegend.moves.Effect
 import com.islands.games.dicelegend.moves.Move
+import com.islands.games.dicelegend.moves.Trait
 
 /**
  * The class that handles the game loop, and the storage of information pertinent to the active duel.
@@ -17,6 +18,7 @@ class Duel implements Printable {
 
     static Player trainingDummy = new Player("Training Dummy")
     static boolean practiceMode = false
+    static Trait practiceTrait = null
 
     // Represents the Player that is using the Move currently being evaluated
     static Player activePlayer
@@ -31,6 +33,7 @@ class Duel implements Printable {
         player1 = null
         player2 = null
         practiceMode = false
+        practiceTrait = null
     }
 
     /**
@@ -81,20 +84,24 @@ class Duel implements Printable {
     /**
      * Attempts to start a practice duel between one player and the {@link #trainingDummy}.
      * @param solo The activating player.
+     * @param element The specific element the dummy should use, if any.
      * @return True if the practice duel was successfully able to be started, false otherwise.
      */
-    static boolean startDuel(Player solo) {
+    static boolean startDuel(Player solo,Trait element=null) {
         if(gameState == GameState.WAITING) {
             player1 = solo
             player2 = trainingDummy
+
+            if(element) {
+                practiceTrait = element
+            }
 
             player1.reset()
             player2.reset()
 
             gameState = GameState.GETTING_MOVES
 
-            // TODO: Add more training options besides just random moves.
-            trainingDummy.chosenMove = RNGesus.randomMove
+            setTrainingMove()
 
             practiceMode = true
 
@@ -152,7 +159,7 @@ class Duel implements Printable {
         players.each { it.chosenMove = null }
 
         if(practiceMode) {
-            player2.chosenMove = RNGesus.randomMove
+            setTrainingMove()
         }
 
         return false
@@ -176,6 +183,7 @@ class Duel implements Printable {
      * Processes the active player's move, applying all relevant effects first.
      */
     static void processMove() {
+        debug "Processing active player's move and all applicable effects"
         List<Effect> applicableEffects = []
         List<Effect> activeRemoval = []
         List<Effect> opposingRemoval = []
@@ -196,6 +204,18 @@ class Duel implements Printable {
         activePlayer.effects.removeAll activeRemoval
         opposingPlayer.effects.removeAll opposingRemoval
         activePlayer.chosenMove.process(activePlayer,opposingPlayer)
+    }
+
+    /**
+     * Sets the training dummy's randomly-selected move, potentially limited by element.
+     */
+    static void setTrainingMove() {
+        // TODO: Add more training options besides just random moves.
+        if(practiceTrait) {
+            trainingDummy.chosenMove = RNGesus.getRandomMove(practiceTrait)
+        } else {
+            trainingDummy.chosenMove = RNGesus.randomMove
+        }
     }
 
 
