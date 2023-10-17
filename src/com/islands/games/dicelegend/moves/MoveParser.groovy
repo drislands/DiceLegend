@@ -134,7 +134,7 @@ class MoveParser implements Printable {
      * @return The found Move.
      */
     static Move getMove(String name) {
-        moves.find { it.name == name }
+        moves.find { it.name.equalsIgnoreCase name }
     }
 
     //////////////////////////////////////

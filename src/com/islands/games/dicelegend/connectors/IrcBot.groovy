@@ -258,7 +258,7 @@ class IrcBot implements Printable {
      * @param user The triggering user.
      * @param event The triggering event. Provided so the bot can easily reply.
      */
-    static def startPractice(user, event,Trait element=null) {
+    static def startPractice(user, event,Trait element=Trait.NONE) {
         def me = getPlayer(user)
         if(me) {
             if(me in challenges.values()) {

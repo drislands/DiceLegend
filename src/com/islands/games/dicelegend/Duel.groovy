@@ -87,7 +87,7 @@ class Duel implements Printable {
      * @param element The specific element the dummy should use, if any.
      * @return True if the practice duel was successfully able to be started, false otherwise.
      */
-    static boolean startDuel(Player solo,Trait element=null) {
+    static boolean startDuel(Player solo,Trait element=Trait.NONE) {
         if(gameState == GameState.WAITING) {
             player1 = solo
             player2 = trainingDummy

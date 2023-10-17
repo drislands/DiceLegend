@@ -8,7 +8,8 @@ enum Trait {
     CONTACT,RANGED, // ATTACK only
     STACKING,PERSISTENT, // EFFECT only
     FAST,SLOW, // A Move may be one of these; FAST overrides SLOW
-    FIRE,EARTH,WATER,AIR // All Moves must be one of these
+    FIRE,EARTH,WATER,AIR, // All Moves must be one of these
+    NONE // effectively null
 
     /**
      * Quick method to get a Trait by name.
@@ -17,7 +18,11 @@ enum Trait {
      */
     static Trait get(String name) {
         values().find {
-            it.name() == name
-        }
+            it.name().equalsIgnoreCase name
+        } ?: NONE
+    }
+
+    boolean asBoolean() {
+        this != NONE
     }
 }
