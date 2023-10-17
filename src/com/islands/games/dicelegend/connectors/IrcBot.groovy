@@ -75,7 +75,7 @@ class IrcBot implements Printable {
                     acceptChallenge(user, event)
                     break
                 case '?reject':
-                    debug "> Accept command."
+                    debug "> Reject command."
                     rejectChallenge(user, event)
                     break
                 default:
@@ -272,7 +272,7 @@ class IrcBot implements Printable {
         if(me) {
             // TODO
         } else {
-            event.respond("You aren't a registered player, there's nothing to retract!")
+            event.respond("You aren't a registered player, there's nothing to reject!")
         }
     }
 
