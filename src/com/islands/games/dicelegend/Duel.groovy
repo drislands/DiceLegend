@@ -97,14 +97,23 @@ class Duel implements Printable {
             return true
         }
 
-        print "DEBUG: Active effects, before end of turn effects:"
+        debug "  vvvvvvvvvvvvv"
+        debug "Active effects, before end of turn effects:"
         players.each { p ->
-            print "> $p.name"
+            debug "> $p.name"
             p.effects.each { e ->
-                print ">> $e.name"
+                debug ">> $e.name ${e.trap?"(T)":''}"
             }
         }
         endOfTurnEffects()
+        debug "Active effects, AFTER end of turn effects:"
+        players.each { p ->
+            debug "> $p.name"
+            p.effects.each { e ->
+                debug ">> $e.name ${e.trap?"(T)":''}"
+            }
+        }
+        debug "  ^^^^^^^^^^^^^"
         if(testOver()) {
             return true
         }
@@ -219,10 +228,10 @@ class Duel implements Printable {
                 }
             }
             activePlayer.effects.removeAll(effects)
-            // Also remove all traps.
-            activePlayer.effects.removeIf {
-                it.trap
-            }
+        }
+        // Also remove all traps.
+        activePlayer.effects.removeIf {
+            it.trap
         }
     }
 }
