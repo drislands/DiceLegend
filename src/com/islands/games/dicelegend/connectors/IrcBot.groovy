@@ -78,6 +78,10 @@ class IrcBot implements Printable {
                     debug "> Reject command."
                     rejectChallenge(user, event)
                     break
+                case '?practice':
+                    debug "> Practice command."
+                    startPractice(user, event)
+                    break
                 default:
                     debug "> Other!"
                     parseOther(msg, user, event)
@@ -273,6 +277,34 @@ class IrcBot implements Printable {
             // TODO
         } else {
             event.respond("You aren't a registered player, there's nothing to reject!")
+        }
+    }
+
+    /**
+     * Initiate a practice duel with a bot.
+     * @param user The triggering user.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
+    static def startPractice(user, event) {
+        def me = getPlayer(user)
+        if(me) {
+            if(me in challenges.values()) {
+                event.respond("You can't practice with an active challenge waiting! Either reject or accept it!")
+            } else if(me in challenges.keySet()) {
+                event.respond("You can't practice with an active challenge waiting! Either retract it or wait " +
+                        "for ${challenges[me].name} to accept!}")
+            } else {
+                if(Duel.startDuel(me)) {
+                    def you = Duel.trainingDummy
+                    messageChannel("$me.name, your practice session is initiating!")
+                    messageChannel("A practice duel is now underway, between challenger $me.name and $you.name!")
+                    messageChannel("Fighter, privately message me the name of the move you want to use!")
+                } else {
+                    event.respond("There's already a duel underway! Wait til it's over to accept!")
+                }
+            }
+        } else {
+            event.respond("You aren't a registered player!")
         }
     }
 
