@@ -58,5 +58,6 @@ class Player {
     void reset() {
         currentHealth = baseHealth
         chosenMove = null
+        effects = []
     }
 }
