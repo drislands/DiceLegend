@@ -1,6 +1,7 @@
 package com.islands.games.dicelegend
 
 import com.islands.games.dicelegend.connectors.ConnectionMode
+import com.islands.games.dicelegend.connectors.DiscordBot
 import com.islands.games.dicelegend.connectors.IrcBot
 import com.islands.games.dicelegend.meta.PrintManager
 import com.islands.games.dicelegend.meta.Printable
@@ -26,7 +27,9 @@ class DiceLegend implements Printable {
                 IrcBot.startBot()
                 break
             case ConnectionMode.DISCORD:
-                println "Not functional yet."
+                DiscordBot.initBot(conf.discord)
+                setPrintForDiscord()
+                DiscordBot.lightBot()
                 break
         }
     }
@@ -88,6 +91,10 @@ class DiceLegend implements Printable {
         PrintManager.printOperation = { String msg ->
             IrcBot.messageChannel(msg)
         }
+    }
+
+    static void setPrintForDiscord() {
+
     }
 
     /**
