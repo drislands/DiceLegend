@@ -5,6 +5,7 @@ import com.islands.games.dicelegend.GameState
 import com.islands.games.dicelegend.Player
 import com.islands.games.dicelegend.exceptions.GameException
 import com.islands.games.dicelegend.meta.Printable
+import com.islands.games.dicelegend.moves.Move
 import com.islands.games.dicelegend.moves.MoveParser
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
@@ -112,38 +113,7 @@ class IrcBot implements Printable {
             }
 
             def move = MoveParser.getMove(msg)
-            if (move) {
-                def me = getPlayer(user)
-                try {
-                    if (Duel.setMove(me, move)) {
-                        event.respond("Move set!")
-                        if (Duel.gameState == GameState.READY_TO_PROCESS) {
-                            messageChannel("Fighters have chosen their moves! Here are the results!")
-                            if (Duel.processRound()) {
-                                messageChannel("The fight is over!")
-                                def winner = Duel.players.find { it.currentHealth }
-                                if (!winner) {
-                                    messageChannel("The result is a tie! Both fighters were defeated at the same time!!!")
-                                } else {
-                                    messageChannel("$winner.name, you are the winner! Congratulations!")
-                                }
-                                Duel.reset()
-                            } else {
-                                messageChannel("Current HP:")
-                                Duel.players.each {
-                                    messageChannel("* $it.name : $it.currentHealth")
-                                }
-                            }
-                        }
-                    } else {
-                        event.respond("It's not time for you to send in a move!")
-                    }
-                } catch (GameException ignored) {
-                    event.respond("You're not in a duel!")
-                }
-            } else {
-                event.respond("That's not a valid move! Check your spelling?")
-            }
+            handleMoveChoice(user,move,event)
         }
     }
 
@@ -314,7 +284,7 @@ class IrcBot implements Printable {
      * @param user The triggering user.
      * @param event The triggering event. Provided so the bot can easily reply.
      */
-    static def parseOther(message,user,event) {
+    static def parseOther(String message,user,event) {
         Map<Pattern,Closure> patterns = [:]
         // For when a challenge is issued.
         patterns[~/\?challenge .*/] = {
@@ -347,12 +317,72 @@ class IrcBot implements Printable {
 
 
 
-        patterns.find { k, v ->
+        def value = patterns.find { k, v ->
             debug ">> Checking pattern $k..."
             def valid = message ==~ k
             debug ">> Is valid? $valid"
             valid
-        }.value.call()
+        }?.value
+
+
+        if(value) {
+            value.call()
+        } else {
+            if(message.startsWith('?')) {
+                debug ">> Message doesn't match known patterns, but starts with ?"
+                def text = message.split(/^\?/)[1]
+                def move = MoveParser.getMove(text)
+
+                if(Duel.practiceMode) {
+                    handleMoveChoice(user,move,event)
+                } else {
+                    event.respond("`$message` is not a valid command.")
+                }
+            } else {
+                debug ">> Message doesn't match any patterns, including ?-keyed"
+            }
+        }
+    }
+
+    /**
+     * Handles the process when a player sends in a move via any established method.
+     * @param user The triggering user.
+     * @param move The {@link Move} the user chose, valid or otherwise.
+     * @param event The triggering event. Provided so the bot can easily reply.
+     */
+    static def handleMoveChoice(user, Move move, event) {
+        def me = getPlayer(user)
+        if (move) {
+            try {
+                if (Duel.setMove(me, move)) {
+                    event.respond("Move set!")
+                    if (Duel.gameState == GameState.READY_TO_PROCESS) {
+                        messageChannel("Fighters have chosen their moves! Here are the results!")
+                        if (Duel.processRound()) {
+                            messageChannel("The fight is over!")
+                            def winner = Duel.players.find { it.currentHealth }
+                            if (!winner) {
+                                messageChannel("The result is a tie! Both fighters were defeated at the same time!!!")
+                            } else {
+                                messageChannel("$winner.name, you are the winner! Congratulations!")
+                            }
+                            Duel.reset()
+                        } else {
+                            messageChannel("Current HP:")
+                            Duel.players.each {
+                                messageChannel("* $it.name : $it.currentHealth")
+                            }
+                        }
+                    }
+                } else {
+                    event.respond("It's not time for you to send in a move!")
+                }
+            } catch (GameException ignored) {
+                event.respond("You're not in a duel!")
+            }
+        } else {
+            event.respond("That's not a valid move! Check your spelling?")
+        }
     }
 
     //////////////////////////
