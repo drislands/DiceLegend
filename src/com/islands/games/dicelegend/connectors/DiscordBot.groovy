@@ -1,14 +1,17 @@
 package com.islands.games.dicelegend.connectors
 
 import com.islands.games.dicelegend.Player
+import com.islands.games.dicelegend.connectors.discord.Command
 import com.islands.games.dicelegend.meta.Printable
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
@@ -23,6 +26,7 @@ class DiscordBot implements Printable {
     static String channel
     static TextChannel DUEL_CHANNEL
     static def admins
+    static List<Command> slashCommands = []
 
     // Duel stats
     static List<Player> players = []
@@ -30,7 +34,20 @@ class DiscordBot implements Printable {
 
     //////////////////////////
 
-    static def listener = new ListenerAdapter() {
+    // Define slash commands.
+    static {
+        slashCommands << Command.makeCommand('ping',
+                'Just a test command to confirm responsiveness.'){}{
+            def time = System.currentTimeMillis()
+            reply("Pong!").setEphemeral(true).flatMap {
+                getHook().editOriginal("Pong: ${System.currentTimeMillis() - time}")
+            }.queue()
+        }
+    }
+
+    //////////////////////////
+
+    static def messageListener = new ListenerAdapter() {
         @Override
         void onMessageReceived(MessageReceivedEvent event) {
             if(event.message.contentRaw == "?SHUTDOWN") {
@@ -43,6 +60,19 @@ class DiscordBot implements Printable {
                     messageChannel("You aren't an admin!")
                 }
             }
+        }
+    }
+
+    static def slashListener = new ListenerAdapter() {
+        @SuppressWarnings('GroovyAssignabilityCheck')
+        @Override
+        void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+            def command = slashCommands.find {
+                it.name == event.name
+            }
+
+            command.action.delegate = event
+            command.action()
         }
     }
 
@@ -59,8 +89,11 @@ class DiscordBot implements Printable {
                 GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.MESSAGE_CONTENT,
                 GatewayIntent.GUILD_MEMBERS)
-                .addEventListeners(listener)
+                .addEventListeners(messageListener)
+                .addEventListeners(slashListener)
                 .build()
+
+        setCommands()
 
         debug "Waiting til ready..."
         jda.awaitReady()
@@ -68,6 +101,7 @@ class DiscordBot implements Printable {
 
         DUEL_CHANNEL = jda.getTextChannelsByName(channel,true)[0]
     }
+
     static void startBot() {
         def builder = JDABuilder.createDefault(token)
 
@@ -82,7 +116,8 @@ class DiscordBot implements Printable {
             disableIntents(GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MESSAGE_TYPING)
             setLargeThreshold(50)
 
-            addEventListeners(listener)
+            addEventListeners(messageListener)
+            addEventListeners(slashListener)
 
             setActivity(Activity.customStatus("Channeling the elements"))
         }
@@ -94,6 +129,20 @@ class DiscordBot implements Printable {
         debug "Ready!"
 
         DUEL_CHANNEL = jda.getTextChannelsByName(channel,true)[0]
+    }
+
+    @SuppressWarnings('GroovyAssignabilityCheck')
+    static void setCommands() {
+        jda.updateCommands().addCommands(
+            slashCommands.collect { c ->
+                def slash = Commands.slash(c.name,c.description)
+
+                c.extra.delegate = slash
+                c.extra()
+
+                slash
+            }
+        ).queue()
     }
 
     //////////////////////////
