@@ -1,9 +1,12 @@
 package com.islands.games.dicelegend.connectors
 
 import com.islands.games.dicelegend.Duel
+import com.islands.games.dicelegend.GameState
 import com.islands.games.dicelegend.Player
 import com.islands.games.dicelegend.connectors.discord.Command
+import com.islands.games.dicelegend.exceptions.GameException
 import com.islands.games.dicelegend.meta.Printable
+import com.islands.games.dicelegend.moves.MoveParser
 import com.islands.games.dicelegend.moves.Trait
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -13,7 +16,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.commands.OptionMapping
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -36,6 +38,7 @@ class DiscordBot implements Printable {
     // Duel stats
     static Map<User,Player> players = [:]
     static Map<Player,Player> challenges = [:]
+    static String duelUpdate = "```"
 
     //////////////////////////
 
@@ -123,7 +126,6 @@ class DiscordBot implements Printable {
             addOption(OptionType.USER,"user",
                     "The user to challenge",true)
         }{
-            deferReply().queue()
             def me = getPlayer(user)
             def target = getOption("user",{it.getAsUser()})
             def you = getPlayer(target)
@@ -149,7 +151,6 @@ class DiscordBot implements Printable {
             addOption(OptionType.STRING,"element",
                     "Optionally force the bot to use a specific element")
         }{
-            deferReply().queue()
             def me = getPlayer(user)
             def target = getOption("element",{ it.getAsString() })
             def element = Trait.get(target)
@@ -165,6 +166,7 @@ class DiscordBot implements Printable {
                                 "for ${challenges[me].name} to accept!}").queue()
                     } else {
                         if(Duel.startDuel(me,element)) {
+                            reply("Practice starting!").setEphemeral(true).queue()
                             def you = Duel.trainingDummy
                             messageChannel("$member.nickname, your practice session ${element?"with dummy focused on $element moves ":''}is initiating!")
                             messageChannel("A practice duel is now underway, between challenger $me.name and $you.name!")
@@ -180,9 +182,45 @@ class DiscordBot implements Printable {
         }
         slashCommands << Command.makeCommand('move',
                 "Choose your move") {
-            addOption(OptionType.STRING,"move","The name of the move to pick",true)
+            addOption(OptionType.STRING,"move",
+                    "The name of the move to pick",true)
         } {
+            def me = getPlayer(user)
+            def target = getOption("move", { it.getAsString() })
+            def move = MoveParser.getMove(target)
 
+            if(me) {
+                if(move) {
+                    try {
+                        if(Duel.setMove(me,move)) {
+                            reply("Move set!").setEphemeral(true).queue()
+                            if (Duel.gameState == GameState.READY_TO_PROCESS) {
+                                print("Fighters have chosen their moves! Here are the results!")
+                                if (Duel.processRound()) {
+                                    print("The fight is over!")
+                                    def winner = Duel.players.find { it.currentHealth }
+                                    if (!winner) {
+                                        print("The result is a tie! Both fighters were defeated at the same time!!!")
+                                    } else {
+                                        print("$winner.name, you are the winner! Congratulations!")
+                                    }
+                                    Duel.reset()
+                                } else {
+                                    print("Current HP:")
+                                    Duel.players.each {
+                                        print("* $it.name : $it.currentHealth")
+                                    }
+                                }
+                                sendDuelUpdate()
+                            }
+                        }
+                    } catch (GameException ignored) {
+                        reply("You're not in a duel!").setEphemeral(true).queue()
+                    }
+                }
+            } else {
+                reply("You aren't a registered player! Use `/register` to get registered!").queue()
+            }
         }
     }
 
@@ -301,6 +339,11 @@ class DiscordBot implements Printable {
 
     static void messageChannel(String message) {
         DUEL_CHANNEL.sendMessage(message).queue()
+    }
+
+    static void sendDuelUpdate() {
+        messageChannel(duelUpdate+'```')
+        duelUpdate = "```"
     }
 
     static void privateMessage(User user,String message) {

@@ -94,7 +94,9 @@ class DiceLegend implements Printable {
     }
 
     static void setPrintForDiscord() {
-
+        PrintManager.printOperation = { String msg ->
+            DiscordBot.duelUpdate += "\n$msg"
+        }
     }
 
     /**
