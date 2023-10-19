@@ -21,4 +21,9 @@ class Command {
 
         c
     }
+
+    static Command makeCommand(String name, String description,
+            @DelegatesTo(SlashCommandInteractionEvent)Closure action) {
+        makeCommand(name,description,null,action)
+    }
 }
