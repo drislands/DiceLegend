@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import net.dv8tion.jda.api.interactions.commands.Command.Choice
 
 /**
  * Dedicated class for connecting as a configured Discord bot, and for facilitating the game loop.
@@ -149,7 +151,7 @@ class DiscordBot implements Printable {
         slashCommands << Command.makeCommand('practice',
                 'Start a practice session with the bot.'){
             addOption(OptionType.STRING,"element",
-                    "Optionally force the bot to use a specific element")
+                    "Optionally force the bot to use a specific element",false,true)
         }{
             def me = getPlayer(user)
             def target = getOption("element",{ it.getAsString() })
@@ -183,7 +185,7 @@ class DiscordBot implements Printable {
         slashCommands << Command.makeCommand('move',
                 "Choose your move") {
             addOption(OptionType.STRING,"move",
-                    "The name of the move to pick",true)
+                    "The name of the move to pick",true,true)
         } {
             def me = getPlayer(user)
             def target = getOption("move", { it.getAsString() })
@@ -258,6 +260,28 @@ class DiscordBot implements Printable {
 
             command.action.delegate = event
             command.action()
+        }
+
+        @Override
+        void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
+            def moves = MoveParser.moves.collect { it.name }
+            def elements = ['Water','Air','Fire','Earth']
+
+            if(event.name == 'move' && event.focusedOption.name == 'move') {
+                def options = moves.findAll { m ->
+                    m.startsWithIgnoreCase(event.focusedOption.value)
+                }.collect {
+                    new Choice(it,it)
+                }
+                event.replyChoices(options).queue()
+            } else if (event.name == 'practice' && event.focusedOption.name == 'element') {
+                def options = elements.findAll { e ->
+                    e.startsWithIgnoreCase(event.focusedOption.value)
+                }.collect {
+                    new Choice(it,it)
+                }
+                event.replyChoices(options).queue()
+            }
         }
     }
 
